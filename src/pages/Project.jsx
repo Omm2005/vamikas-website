@@ -151,10 +151,10 @@ const Project = () => {
                 </p>
               </div>
               <div className="order-1 md:order-2 grid grid-cols-2 gap-4">
-                <Placeholder caption={frag.caps[0]} className={active === "chaos" ? "rotate-2" : "-rotate-2"} note="hover me" />
+                <Placeholder slot={`project-${active}-1`} caption={frag.caps[0]} className={active === "chaos" ? "rotate-2" : "-rotate-2"} note="hover me" />
                 <div className="flex flex-col gap-4 mt-8">
-                  <Placeholder caption={frag.caps[1]} ratio="aspect-square" className="rotate-1" />
-                  <Placeholder caption={frag.caps[2]} ratio="aspect-[4/3]" className="-rotate-1" />
+                  <Placeholder slot={`project-${active}-2`} caption={frag.caps[1]} ratio="aspect-square" className="rotate-1" />
+                  <Placeholder slot={`project-${active}-3`} caption={frag.caps[2]} ratio="aspect-[4/3]" className="-rotate-1" />
                 </div>
               </div>
             </motion.div>
@@ -209,9 +209,9 @@ const Project = () => {
             </h2>
           </Reveal>
           <div className="mt-14 grid grid-cols-2 md:grid-cols-3 gap-5">
-            <Reveal delay={0.05}><Placeholder dark caption="construction — in progress" note="3am sewing club of one" /></Reveal>
-            <Reveal delay={0.12} className="md:mt-10"><Placeholder dark caption="embroidery detail" note="slow on purpose" /></Reveal>
-            <Reveal delay={0.19}><Placeholder dark caption="almost finished" note="then: one more stitch" /></Reveal>
+            <Reveal delay={0.05}><Placeholder slot="project-making-1" dark caption="construction — in progress" note="3am sewing club of one" /></Reveal>
+            <Reveal delay={0.12} className="md:mt-10"><Placeholder slot="project-making-2" dark caption="embroidery detail" note="slow on purpose" /></Reveal>
+            <Reveal delay={0.19}><Placeholder slot="project-making-3" dark caption="almost finished" note="then: one more stitch" /></Reveal>
           </div>
         </div>
       </section>

@@ -69,7 +69,7 @@ const About = () => {
           {FRAGMENT_CARDS.map((c, i) => (
             <Reveal key={i} delay={i * 0.08} className={c.offset}>
               <div className={`tape ${c.rotate} transition-transform duration-500 hover:rotate-0 hover:scale-[1.03]`}>
-                <Placeholder caption={c.caption} note={c.note} />
+                <Placeholder slot={`about-${i + 1}`} caption={c.caption} note={c.note} />
               </div>
             </Reveal>
           ))}

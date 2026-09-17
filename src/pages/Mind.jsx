@@ -346,7 +346,7 @@ const Mind = () => {
                   </p>
                 </div>
                 <div className={i % 2 ? "rotate-1" : "-rotate-1"}>
-                  <Placeholder caption={m.cap} ratio="aspect-[4/3]" />
+                  <Placeholder slot={`mind-memory-${i + 1}`} caption={m.cap} ratio="aspect-[4/3]" />
                 </div>
               </article>
             </Reveal>
@@ -437,7 +437,12 @@ const Mind = () => {
                     {feeling}
                   </div>
                   <div className="pt-14 -rotate-1">
-                    <Placeholder dark caption={piece.cap} note={piece.hand} />
+                    <Placeholder
+                      slot={`mind-${feeling}-${(variant % data.pieces.length) + 1}`}
+                      dark
+                      caption={piece.cap}
+                      note={piece.hand}
+                    />
                   </div>
                 </div>
 

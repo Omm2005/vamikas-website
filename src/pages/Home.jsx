@@ -43,13 +43,15 @@ const CHAPTERS = [
   { n: "05", title: "the moodboards", to: "/moodboards", note: "research, pinned" },
 ];
 
+// `slot` is the name the admin fills with a photo; without one the fragment
+// falls back to its drawn placeholder.
 const FRAGMENTS = [
-  { type: "ph", caption: "sketch no.04 — soon", note: "anatomy studies, 2am", cls: "left-[4%] top-[14%] w-36 sm:w-52", rotate: -6, depth: 34 },
-  { type: "ph", caption: "raw silk, undyed", note: "it drapes like water", cls: "right-[5%] top-[10%] w-32 sm:w-48", rotate: 5, depth: 58 },
+  { type: "ph", slot: "home-hero-1", caption: "sketch no.04 — soon", note: "anatomy studies, 2am", cls: "left-[4%] top-[14%] w-36 sm:w-52", rotate: -6, depth: 34 },
+  { type: "ph", slot: "home-hero-2", caption: "raw silk, undyed", note: "it drapes like water", cls: "right-[5%] top-[10%] w-32 sm:w-48", rotate: 5, depth: 58 },
   { type: "note", text: "2nd grade. that's where it started.", cls: "left-[34%] top-[9%] hidden sm:block", rotate: -2, depth: 84 },
   { type: "word", text: "obsessions", cls: "left-[7%] bottom-[22%]", rotate: -3, depth: 72 },
   { type: "word", text: "SCHIAPARELLI", serif: true, cls: "right-[9%] bottom-[28%] hidden md:block", rotate: 2, depth: 44 },
-  { type: "ph", caption: "look 02 — unfinished", note: "like me", cls: "right-[22%] top-[40%] w-28 sm:w-40 hidden md:block", rotate: 8, depth: 24 },
+  { type: "ph", slot: "home-hero-3", caption: "look 02 — unfinished", note: "like me", cls: "right-[22%] top-[40%] w-28 sm:w-40 hidden md:block", rotate: 8, depth: 24 },
   { type: "note", text: "how messy my brain can be ↓", cls: "right-[4%] bottom-[10%]", rotate: 3, depth: 62 },
   { type: "word", text: "mythology", cls: "left-[24%] top-[34%] hidden lg:block", rotate: -8, depth: 40 },
 ];
@@ -122,7 +124,7 @@ const Home = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + i * 0.08, duration: 0.8 }}
               >
-                <Placeholder caption={f.caption} note={f.note} />
+                <Placeholder slot={f.slot} caption={f.caption} note={f.note} />
               </motion.div>
             )}
             {f.type === "note" && (

@@ -54,7 +54,7 @@ const Process = () => {
                 <h3 className="font-serif font-light uppercase tracking-tight text-2xl sm:text-3xl">{s.title}</h3>
               </div>
               <div className="tape">
-                <Placeholder caption={s.cap} note={s.note} ratio="aspect-[4/5]" />
+                <Placeholder slot={`process-${i + 1}`} caption={s.cap} note={s.note} ratio="aspect-[4/5]" />
               </div>
               <p className="mt-3 font-hand text-xl text-smoke rotate-[-1deg]">{s.note}</p>
             </div>

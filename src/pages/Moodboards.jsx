@@ -216,7 +216,7 @@ const Moodboards = () => {
               <div className="mt-5 grid grid-cols-3 gap-2">
                 {b.caps.map((c, k) => (
                   <div key={c} className={k === 1 ? "mt-3" : ""}>
-                    <Placeholder caption={c} ratio="aspect-[3/4]" />
+                    <Placeholder slot={`moodboard-${b.id}-${k + 1}`} caption={c} ratio="aspect-[3/4]" />
                   </div>
                 ))}
               </div>
@@ -329,7 +329,11 @@ const Moodboards = () => {
                           key={c}
                           className={k === 1 ? "sm:mt-8 rotate-1" : k === 2 ? "sm:mt-4 -rotate-1" : "-rotate-2"}
                         >
-                          <Placeholder caption={c} note={board.notes[k % board.notes.length]} />
+                          <Placeholder
+                            slot={`moodboard-${board.id}-${k + 1}`}
+                            caption={c}
+                            note={board.notes[k % board.notes.length]}
+                          />
                         </div>
                       ))}
                     </div>

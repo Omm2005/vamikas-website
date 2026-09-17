@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { API } from "@/lib/api";
+import { parseMedium } from "@/lib/slots";
 import { X } from "lucide-react";
 import Reveal from "@/components/Reveal";
 
@@ -158,7 +159,11 @@ const Archive = () => {
                 <span className="font-sans text-[10px] tracking-[0.35em] uppercase text-pink">{active.category}</span>
                 <h3 className="mt-3 font-serif font-light italic text-4xl sm:text-5xl tracking-tight">{active.title}</h3>
                 <div className="mt-6 space-y-2 font-sans text-sm text-cream/70">
-                  {active.medium && <p><span className="text-pink">medium —</span> {active.medium}</p>}
+                  {parseMedium(active.medium).medium && (
+                    <p>
+                      <span className="text-pink">medium —</span> {parseMedium(active.medium).medium}
+                    </p>
+                  )}
                   {active.year && <p><span className="text-pink">year —</span> {active.year}</p>}
                   {active.description && <p className="pt-3 leading-relaxed">{active.description}</p>}
                 </div>
