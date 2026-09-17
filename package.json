@@ -1,0 +1,29 @@
+{
+  "name": "vamika-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && cp dist/app.js app.js && cp dist/styles.css styles.css",
+    "serve": "python3 -m http.server 8080"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.59.0",
+    "axios": "^1.7.7",
+    "framer-motion": "^11.11.0",
+    "lenis": "^1.1.13",
+    "lucide-react": "^0.446.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
+    "autoprefixer": "^10.4.20",
+    "playwright": "^1.63.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "vite": "^5.4.8"
+  }
+}

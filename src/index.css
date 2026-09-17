@@ -1,0 +1,144 @@
+@import url("https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;0,6..96,700;1,6..96,400;1,6..96,500;1,6..96,600&family=La+Belle+Aurore&family=Inter:wght@300;400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 23% 95%;
+    --foreground: 0 0% 10%;
+    --card: 36 17% 93%;
+    --card-foreground: 0 0% 10%;
+    --popover: 40 23% 95%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 40 23% 95%;
+    --secondary: 36 17% 93%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 36 17% 93%;
+    --muted-foreground: 0 0% 35%;
+    --accent: 348 38% 75%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 355 38% 45%;
+    --destructive-foreground: 40 23% 95%;
+    --border: 36 14% 87%;
+    --input: 36 14% 87%;
+    --ring: 355 38% 45%;
+    --radius: 0.25rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  body {
+    @apply bg-cream font-sans text-ink;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: #6b1226;
+    color: #f7f5f0;
+  }
+
+  /* keyboard users get a burgundy focus ring instead of the browser default */
+  :focus-visible {
+    outline: 2px solid #6b1226;
+    outline-offset: 3px;
+  }
+}
+
+/* tactile paper grain over everything */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox=%270 0 240 240%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.85%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23n%29%27 opacity=%270.16%27/%3E%3C/svg%3E");
+}
+
+.text-outline {
+  -webkit-text-stroke: 1px #1a1a1a;
+  color: transparent;
+}
+
+.text-outline-blush {
+  -webkit-text-stroke: 1px #d9a5b3;
+  color: transparent;
+}
+
+.text-outline-pink {
+  -webkit-text-stroke: 1px #f3a8bf;
+  color: transparent;
+}
+
+.text-outline-burgundy {
+  -webkit-text-stroke: 1px #6b1226;
+  color: transparent;
+}
+
+.scribble-underline {
+  background-image: linear-gradient(to right, #6b1226, #f3a8bf);
+  background-repeat: no-repeat;
+  background-size: 100% 2px;
+  background-position: 0 96%;
+}
+
+/* a hand-drawn looking pink rule — used to mark the interactive moments */
+.pink-rule {
+  background-image: linear-gradient(to right, transparent, #f3a8bf 12%, #f3a8bf 88%, transparent);
+  height: 1px;
+}
+
+.tape {
+  position: relative;
+}
+.tape::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 72px;
+  height: 20px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(243, 168, 191, 0.5);
+  border-left: 1px dashed rgba(26, 26, 26, 0.2);
+  border-right: 1px dashed rgba(26, 26, 26, 0.2);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f2efeb;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border: 2px solid #f2efeb;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
