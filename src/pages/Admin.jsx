@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { LogOut, Trash2, Upload } from "lucide-react";
+import { upload as uploadToBlob } from "@vercel/blob/client";
+import { LogOut, Plus, Trash2, Upload } from "lucide-react";
 import { API } from "@/lib/api";
 import { ALL_SLOTS, SLOT_GROUPS, mapPhotos, parseMedium, photoUrl, withSlot } from "@/lib/slots";
 
@@ -47,6 +48,12 @@ const Admin = () => {
   const [status, setStatus] = useState("");
   const [links, setLinks] = useState({ email: "", instagram: "", elsewhere: "" });
   const [linksStatus, setLinksStatus] = useState("");
+  // The spots on the site are shown one page at a time, and each spot can be
+  // uploaded into on its own.
+  const [openGroup, setOpenGroup] = useState(SLOT_GROUPS[0].id);
+  const [slotState, setSlotState] = useState({});
+  const slotInput = useRef(null);
+  const wantedSlot = useRef(null);
 
   const loadItems = () =>
     axios
@@ -119,21 +126,39 @@ const Admin = () => {
     setFile(picked);
   };
 
+  // Two steps, because a function body caps at 4.5 MB and these are full-size
+  // photos: the file goes browser → Blob directly, then the details are
+  // recorded against the URL it came back with.
   const upload = async (e) => {
     e.preventDefault();
     if (!file) {
       setStatus("pick an image first.");
       return;
     }
-    setStatus("uploading…");
+
+    const formEl = e.target;
+    setStatus("uploading the photo…");
+
+    let blob;
     try {
-      const fd = new FormData();
-      fd.append("file", file);
+      blob = await uploadToBlob(file.name, file, {
+        access: "public",
+        handleUploadUrl: `${API}/blob/upload`,
+        contentType: file.type || undefined,
+      });
+    } catch (err) {
+      setStatus(`the photo did not upload — ${err?.message?.toLowerCase() || "unknown error"}`);
+      return;
+    }
+
+    setStatus("saving the details…");
+    try {
       const { slot, ...fields } = form;
-      Object.entries({ ...fields, medium: withSlot(fields.medium, slot) }).forEach(([k, v]) =>
-        fd.append(k, v),
+      await axios.post(
+        `${API}/gallery`,
+        { ...fields, medium: withSlot(fields.medium, slot), url: blob.url, storage_path: blob.pathname },
+        { withCredentials: true },
       );
-      await axios.post(`${API}/gallery`, fd, { withCredentials: true });
       setStatus(
         form.slot
           ? `added ✓ — it is now live in ${slotLabel(form.slot)}`
@@ -141,10 +166,51 @@ const Admin = () => {
       );
       setForm(EMPTY_FORM);
       chooseFile(null);
-      e.target.reset();
+      formEl.reset();
       loadItems();
     } catch (err) {
       setStatus(formatError(err));
+    }
+  };
+
+  // Clicking a spot uploads straight into it — the long form is only needed
+  // when a piece wants a medium, a year and a diary note of its own. The spot's
+  // own name becomes the title, which is all the archive listing needs.
+  const pickForSlot = (slot) => {
+    wantedSlot.current = slot;
+    slotInput.current?.click();
+  };
+
+  const uploadToSlot = async (slot, file) => {
+    setSlotState((current) => ({ ...current, [slot.id]: { busy: true, error: "" } }));
+    try {
+      const blob = await uploadToBlob(file.name, file, {
+        access: "public",
+        handleUploadUrl: `${API}/blob/upload`,
+        contentType: file.type || undefined,
+      });
+      await axios.post(
+        `${API}/gallery`,
+        {
+          title: slotLabel(slot.id),
+          category: form.category,
+          medium: withSlot("", slot.id),
+          url: blob.url,
+          storage_path: blob.pathname,
+        },
+        { withCredentials: true },
+      );
+      await loadItems();
+      setSlotState((current) => ({ ...current, [slot.id]: { busy: false, error: "" } }));
+    } catch (err) {
+      setSlotState((current) => ({
+        ...current,
+        [slot.id]: {
+          busy: false,
+          // A Blob failure is not an axios error, so it has no response to read.
+          error: err?.response ? formatError(err) : err?.message?.toLowerCase() || "the upload failed.",
+        },
+      }));
     }
   };
 
@@ -252,7 +318,7 @@ const Admin = () => {
                     <p className="mt-1 font-sans text-xs text-smoke">
                       {file
                         ? `${(file.size / 1024 / 1024).toFixed(1)} MB — click to swap`
-                        : "jpg or png · it is served at full size, so resize large exports first"}
+                        : "jpg, png or webp · up to 25 MB, served at full size"}
                     </p>
                   </div>
                   <input
@@ -437,64 +503,141 @@ const Admin = () => {
               </button>
             </form>
 
+            {/* One shared picker for every spot — the tile that was clicked
+                is remembered in a ref. */}
+            <input
+              ref={slotInput}
+              data-testid="slot-file-input"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const picked = e.target.files?.[0];
+                const slot = wantedSlot.current;
+                // Cleared so picking the same file twice still fires onChange.
+                e.target.value = "";
+                if (picked && slot) uploadToSlot(slot, picked);
+              }}
+            />
+
             <h2 className="font-serif italic text-3xl mt-12">
-              on the site ({Object.keys(filled).length}/{ALL_SLOTS.length})
+              on the site{" "}
+              <span className="font-sans text-sm not-italic text-smoke">
+                ({Object.keys(filled).length}/{ALL_SLOTS.length} filled)
+              </span>
             </h2>
             <p className="mt-1 font-hand text-xl text-smoke -rotate-1">
-              every photo spot on the site — empty ones show the drawn placeholder
+              click any spot to drop a photo straight into it
             </p>
-            <div
-              data-testid="admin-slots"
-              className="mt-5 space-y-6 max-h-[60vh] overflow-y-auto pr-2 border border-dashed border-burgundy/60 bg-paper/60 p-5"
-            >
-              {SLOT_GROUPS.map((group) => (
-                <div key={group.id}>
-                  <p className="font-sans text-[10px] tracking-[0.25em] uppercase text-wine">
-                    {group.page} — {group.title}
-                  </p>
-                  {group.hint && (
-                    <p className="mt-1 font-hand text-lg text-smoke leading-tight">{group.hint}</p>
-                  )}
-                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {group.slots.map((slot) => {
-                      const item = filled[slot.id];
-                      return (
-                        <div key={slot.id} data-testid={`slot-${slot.id}`} className="min-w-0">
-                          <div className="aspect-[3/4] border border-ink/50 bg-cream overflow-hidden relative">
-                            {item ? (
-                              <img
-                                src={photoUrl(item)}
-                                alt={item.title}
-                                className="absolute inset-0 w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="font-hand text-lg text-smoke/70 -rotate-3">empty</span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="mt-1.5 font-sans text-[10px] leading-tight text-smoke truncate">
-                            {slot.label}
-                          </p>
-                          {item && (
-                            <button
-                              data-testid={`slot-clear-${slot.id}`}
-                              onClick={() => remove(item.id)}
-                              className="mt-0.5 font-sans text-[10px] tracking-[0.2em] uppercase text-smoke hover:text-wine transition-colors"
-                            >
-                              remove
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+
+            {/* One page at a time. Sixty-odd spots in a single scrolling box
+                inside an already-scrolling page was the thing that made this
+                unusable. */}
+            <div data-testid="admin-slot-tabs" className="mt-5 flex flex-wrap gap-2">
+              {SLOT_GROUPS.map((group) => {
+                const count = group.slots.filter((s) => filled[s.id]).length;
+                const on = group.id === openGroup;
+                return (
+                  <button
+                    key={group.id}
+                    data-testid={`slot-tab-${group.id}`}
+                    onClick={() => setOpenGroup(group.id)}
+                    aria-pressed={on}
+                    className={`border px-3 py-2 font-sans text-[10px] tracking-[0.2em] uppercase transition-colors ${
+                      on
+                        ? "border-ink bg-ink text-cream"
+                        : "border-ink/40 bg-paper text-smoke hover:border-burgundy hover:text-wine"
+                    }`}
+                  >
+                    {group.page}
+                    <span className={`ml-2 ${on ? "text-pink" : "text-wine"}`}>
+                      {count}/{group.slots.length}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
+            {SLOT_GROUPS.filter((group) => group.id === openGroup).map((group) => (
+              <div
+                key={group.id}
+                data-testid="admin-slots"
+                className="mt-4 border border-dashed border-burgundy/60 bg-paper/60 p-5"
+              >
+                <p className="font-sans text-[10px] tracking-[0.25em] uppercase text-wine">
+                  {group.page} — {group.title}
+                </p>
+                {group.hint && (
+                  <p className="mt-1 font-hand text-lg text-smoke leading-tight">{group.hint}</p>
+                )}
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {group.slots.map((slot) => {
+                    const item = filled[slot.id];
+                    const state = slotState[slot.id] || {};
+                    return (
+                      <div key={slot.id} data-testid={`slot-${slot.id}`} className="min-w-0">
+                        <button
+                          type="button"
+                          data-testid={`slot-pick-${slot.id}`}
+                          onClick={() => pickForSlot(slot)}
+                          disabled={state.busy}
+                          aria-label={
+                            item ? `replace the photo in ${slot.label}` : `add a photo to ${slot.label}`
+                          }
+                          className="group relative block w-full aspect-[3/4] border border-ink/50 bg-cream overflow-hidden hover:border-burgundy transition-colors"
+                        >
+                          {item ? (
+                            <img
+                              src={photoUrl(item)}
+                              alt={item.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                              <Plus size={16} className="text-wine" />
+                              <span className="font-hand text-lg text-smoke/70 -rotate-3">empty</span>
+                            </span>
+                          )}
+                          <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-ink/70">
+                            <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-cream">
+                              {item ? "replace" : "choose a photo"}
+                            </span>
+                          </span>
+                          {state.busy && (
+                            <span className="absolute inset-0 flex items-center justify-center bg-cream/85">
+                              <span className="font-hand text-lg text-wine">uploading…</span>
+                            </span>
+                          )}
+                        </button>
+                        <p className="mt-1.5 font-sans text-[10px] leading-tight text-smoke truncate">
+                          {slot.label}
+                        </p>
+                        {state.error && (
+                          <p
+                            data-testid={`slot-error-${slot.id}`}
+                            className="font-hand text-base leading-tight text-wine"
+                          >
+                            {state.error}
+                          </p>
+                        )}
+                        {item && !state.busy && (
+                          <button
+                            data-testid={`slot-clear-${slot.id}`}
+                            onClick={() => remove(item.id)}
+                            className="mt-0.5 font-sans text-[10px] tracking-[0.2em] uppercase text-smoke hover:text-wine transition-colors"
+                          >
+                            remove
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
             <h2 className="font-serif italic text-3xl mt-12">in the archive ({items.length})</h2>
-            <div className="mt-6 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+            <div className="mt-6 space-y-3">
               {items.map((item) => (
                 <div
                   key={item.id}
@@ -502,7 +645,7 @@ const Admin = () => {
                   className="flex items-center gap-4 border border-ink/50 bg-paper p-3"
                 >
                   <img
-                    src={`${API}/files/${item.storage_path}`}
+                    src={photoUrl(item)}
                     alt={item.title}
                     className="w-14 h-14 object-cover border border-ink/40"
                   />

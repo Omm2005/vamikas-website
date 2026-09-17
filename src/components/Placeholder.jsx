@@ -1,4 +1,4 @@
-import { photoUrl, useSlotPhoto } from "@/lib/slots";
+import { parseMedium, photoUrl, useSlotPhoto } from "@/lib/slots";
 
 // Every photo on the site comes through here. Pass a `slot` and the admin can
 // fill it; until someone does, the hand-drawn box below stands in, so the
@@ -28,9 +28,24 @@ const Placeholder = ({
     </div>
   ) : null;
 
+  // What the bubble cluster has to say about this photo: the diary note is the
+  // hidden thought, with the catalogue line under it. `data-bubble` alone is
+  // enough for the bubbles to gather — the rest is what a click reveals.
+  const catalogue = photo
+    ? [parseMedium(photo.medium).medium, photo.year].filter(Boolean).join(" · ")
+    : "";
+
   if (photo) {
     return (
-      <figure data-testid="art-photo" data-slot={slot} className={frame}>
+      <figure
+        data-testid="art-photo"
+        data-slot={slot}
+        data-bubble=""
+        data-bubble-note={photo.diary || photo.description || ""}
+        data-bubble-title={photo.title || ""}
+        data-bubble-meta={catalogue}
+        className={frame}
+      >
         <img
           src={photoUrl(photo)}
           alt={alt || photo.title || caption}
@@ -43,7 +58,7 @@ const Placeholder = ({
   }
 
   return (
-    <div data-testid="art-placeholder" data-slot={slot} className={frame}>
+    <div data-testid="art-placeholder" data-slot={slot} data-bubble="" className={frame}>
       <div className="absolute inset-2 border border-dashed border-current opacity-25 pointer-events-none" />
       <span className="absolute top-3 left-3 w-2 h-2 border-t border-l border-current opacity-50" />
       <span className="absolute top-3 right-3 w-2 h-2 border-t border-r border-current opacity-50" />

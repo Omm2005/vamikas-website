@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import { AnimatePresence } from "framer-motion";
 import Nav from "@/components/Nav";
+import Bubbles from "@/components/Bubbles";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Mind from "@/pages/Mind";
@@ -72,6 +73,7 @@ function App() {
         <ScrollToTop />
         <Nav />
         <AnimatedRoutes />
+        <Bubbles />
       </BrowserRouter>
     </div>
   );

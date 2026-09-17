@@ -54,7 +54,39 @@ Pink and burgundy are used selectively and never at the same weight in one view.
 
 ## Backend
 
-The archive, contact links and `/admin` studio call the original preview API
-(`src/lib/api.js`). That host currently answers 404, so those views fall back to their
-empty states by design.
+The archive, contact links and `/admin` studio are served by this same deployment,
+under `/api` (`src/lib/api.js` just points at the same origin). It replaces the
+original Emergent preview API, which was torn down and answered 404 for everything.
+
+| Route | Method | Who |
+|---|---|---|
+| `/api/auth/login` · `/api/auth/logout` | POST | anyone / signed in |
+| `/api/auth/me` | GET | returns 401 when not signed in |
+| `/api/gallery` | GET | public (`?category=` filters) |
+| `/api/gallery` | POST | studio only — records an upload |
+| `/api/gallery/<id>` | DELETE | studio only — drops the row and its photo |
+| `/api/settings/links` | GET / PUT | public read, studio write |
+| `/api/blob/upload` | POST | studio only — issues an upload token |
+
+- **Data** lives in Neon Postgres (`gallery_items`, `settings`). Create the tables
+  with `node scripts/db-setup.mjs` — it is safe to re-run.
+- **Photos** live in Vercel Blob. The browser uploads to Blob *directly* using a
+  token from `/api/blob/upload`, because a function request body caps at 4.5 MB and
+  these are full-size images. Images are then served from the Blob CDN, not through
+  the API.
+- **The session** is an HMAC-signed, `HttpOnly`, `SameSite=Lax` cookie. There is one
+  admin, whose email and scrypt password hash are environment variables — the
+  password itself is never stored.
+
+### Setting the studio login
+
+```bash
+node scripts/set-admin.mjs <email> [password]   # omit the password to get a generated one
+vercel env pull .env.local                      # for local dev
+```
+
+It writes `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` and `SESSION_SECRET` to all three
+Vercel environments. Re-run it to rotate the password; rotating `SESSION_SECRET`
+signs the studio out everywhere. Until it has been run once, `/api/auth/login`
+answers 500 and says so.
 # vamikas-website

@@ -7,10 +7,9 @@ import { API } from "@/lib/api";
 // an uploaded photo tagged with its name in the admin.
 //
 // The tag rides along in the item's `medium` field. That is not where it
-// belongs, but the backend has no edit endpoint (PUT/PATCH on a gallery item
-// answer 405) and no general settings store (/api/settings/<anything> answers
-// 404), so the only writable place is the metadata sent at upload time. The
-// marker is stripped everywhere `medium` is shown.
+// belongs, but an item cannot be edited after upload, so the metadata sent at
+// upload time is the only writable place. The marker is stripped everywhere
+// `medium` is shown.
 const MARKER = /\s*\[\[slot:([a-z0-9-]+)\]\]\s*/i;
 
 export const parseMedium = (raw) => {
@@ -22,7 +21,8 @@ export const parseMedium = (raw) => {
 export const withSlot = (medium, slot) =>
   slot ? `${medium || ""} [[slot:${slot}]]`.trim() : medium || "";
 
-export const photoUrl = (item) => `${API}/files/${item.storage_path}`;
+// Photos are served straight from Blob storage, not through the API.
+export const photoUrl = (item) => item?.url || "";
 
 const range = (count, make) => Array.from({ length: count }, (_, i) => make(i + 1));
 

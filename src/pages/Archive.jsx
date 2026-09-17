@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { API } from "@/lib/api";
-import { parseMedium } from "@/lib/slots";
+import { parseMedium, photoUrl } from "@/lib/slots";
 import { X } from "lucide-react";
 import Reveal from "@/components/Reveal";
 
@@ -108,10 +108,14 @@ const Archive = () => {
               viewport={{ once: true }}
               transition={{ delay: (i % 6) * 0.05, duration: 0.6 }}
               onClick={() => setActive(item)}
+              data-bubble=""
+              data-bubble-note={item.diary || item.description || ""}
+              data-bubble-title={item.title || ""}
+              data-bubble-meta={[parseMedium(item.medium).medium, item.year].filter(Boolean).join(" · ")}
               className="group relative mb-5 w-full break-inside-avoid border border-ink/60 bg-paper overflow-hidden text-left shadow-[4px_4px_0px_rgba(26,26,26,0.85)] hover:shadow-[7px_7px_0px_#9E4751] transition-shadow duration-300"
             >
               <img
-                src={`${API}/files/${item.storage_path}`}
+                src={photoUrl(item)}
                 alt={item.title}
                 className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
               />
@@ -151,7 +155,7 @@ const Archive = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={`${API}/files/${active.storage_path}`}
+                src={photoUrl(active)}
                 alt={active.title}
                 className="w-full max-h-[75vh] object-contain border border-cream/30"
               />
