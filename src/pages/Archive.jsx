@@ -44,12 +44,15 @@ const Archive = () => {
   const [filter, setFilter] = useState("all");
   const [active, setActive] = useState(null);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
+    setLoaded(false);
+    setLoadError(false);
     axios
       .get(`${API}/gallery`, { params: { category: filter } })
       .then((res) => setItems(res.data.items || []))
-      .catch(() => setItems([]))
+      .catch(() => { setItems([]); setLoadError(true); })
       .finally(() => setLoaded(true));
   }, [filter]);
 
@@ -88,7 +91,14 @@ const Archive = () => {
       </section>
 
       <section className="px-5 sm:px-16 py-16 sm:py-20">
-        {loaded && items.length === 0 && (
+        {!loaded && <p role="status" className="py-24 text-center font-hand text-2xl text-wine">gathering the pieces…</p>}
+        {loaded && loadError && (
+          <div role="alert" className="border border-wine/40 bg-paper/60 py-16 px-8 text-center">
+            <p className="font-serif italic text-3xl text-ink/80">the archive could not be reached.</p>
+            <button onClick={() => setFilter((value) => value)} className="mt-4 font-hand text-2xl text-wine underline">try again</button>
+          </div>
+        )}
+        {loaded && !loadError && items.length === 0 && (
           <div data-testid="archive-empty" className="border border-dashed border-ink/50 bg-paper/60 py-24 px-8 text-center">
             <p className="font-serif italic text-3xl sm:text-5xl text-ink/80">the archive is quiet — for now.</p>
             <p className="mt-4 font-hand text-2xl text-wine -rotate-1">first pieces being photographed…</p>

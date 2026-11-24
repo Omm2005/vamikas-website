@@ -130,13 +130,13 @@ export const mapPhotos = (items) => {
 /// One shared fetch for the whole site: react-query dedupes across every
 /// placeholder on the page.
 export const useSitePhotos = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["gallery"],
     queryFn: () => axios.get(`${API}/gallery`).then((res) => res.data.items || []),
     staleTime: 5 * 60 * 1000,
   });
   const photos = useMemo(() => mapPhotos(data), [data]);
-  return { photos, isLoading };
+  return { photos, isLoading, isError, error };
 };
 
 export const useSlotPhoto = (slot) => {
